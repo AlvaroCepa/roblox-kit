@@ -1,0 +1,13 @@
+{
+  "name": "roblox-kit",
+  "displayName": "Roblox Kit",
+  "version": "0.1.0",
+  "description": "Sistema para hacer juegos de Roblox con Claude Code: frenos y comprobaciones automáticas, MCP de Studio y Blender, scripts de claves y skills de cada oficio.",
+  "author": {
+    "name": "AlvaroCepa",
+    "url": "https://github.com/AlvaroCepa"
+  },
+  "homepage": "https://github.com/AlvaroCepa/roblox-kit",
+  "repository": "https://github.com/AlvaroCepa/roblox-kit",
+  "keywords": ["roblox", "luau", "rojo", "studio", "blender"]
+}

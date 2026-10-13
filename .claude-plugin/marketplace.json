@@ -1,0 +1,15 @@
+{
+  "name": "roblox-kit",
+  "description": "Catálogo con el plugin roblox-kit.",
+  "owner": {
+    "name": "AlvaroCepa",
+    "url": "https://github.com/AlvaroCepa"
+  },
+  "plugins": [
+    {
+      "name": "roblox-kit",
+      "source": "./",
+      "description": "Sistema para hacer juegos de Roblox con Claude Code: frenos y comprobaciones automáticas, MCP de Studio y Blender, scripts de claves y skills de cada oficio."
+    }
+  ]
+}
