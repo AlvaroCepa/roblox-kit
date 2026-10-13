@@ -42,7 +42,7 @@ try {
     $faltan = @()
 
     if ((Test-Path (Join-Path $raiz 'stylua.toml')) -or (Test-Path (Join-Path $raiz '.stylua.toml'))) {
-        $r = Ejecutar 'stylua' @($relativa) $raiz 30
+        $r = Ejecutar 'stylua' @('--respect-ignores', $relativa) $raiz 30
         if ($r.Codigo -eq -2) { $faltan += 'stylua' }
         elseif ($r.Codigo -ne 0) { $problemas += "StyLua no puede formatearlo (suele ser un error de sintaxis):`n" + (($r.Salida -split "`n" | Select-Object -First 15) -join "`n") }
     }

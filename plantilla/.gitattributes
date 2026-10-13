@@ -1,0 +1,8 @@
+# Finales de línea de Linux en todo: dos PCs con Windows y la CI con Linux no se pisan.
+* text=auto eol=lf
+*.rbxm binary
+*.rbxl binary
+*.png binary
+*.jpg binary
+*.ogg binary
+*.mp3 binary

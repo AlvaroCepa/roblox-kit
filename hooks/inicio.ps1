@@ -30,7 +30,9 @@ try {
     # Git
     if (Test-Path -LiteralPath (Join-Path $raiz '.git')) {
         $env:GIT_TERMINAL_PROMPT = '0'
-        $rama = (Ejecutar 'git' @('rev-parse', '--abbrev-ref', 'HEAD') $raiz 10).Salida
+        $r = Ejecutar 'git' @('rev-parse', '--abbrev-ref', 'HEAD') $raiz 10
+        # Un repo recién creado aún no tiene commits: rev-parse falla, pero la rama ya tiene nombre.
+        $rama = if ($r.Codigo -eq 0) { $r.Salida } else { (Ejecutar 'git' @('symbolic-ref', '--short', 'HEAD') $raiz 10).Salida + ' (sin commits)' }
         $cambios = @((Ejecutar 'git' @('status', '--porcelain') $raiz 15).Salida -split "`n" | Where-Object { $_.Trim() })
         $linea = "Rama: $rama"
         if ($cambios.Count) { $linea += ", $($cambios.Count) archivo(s) con cambios sin commit" }
@@ -52,6 +54,12 @@ try {
                 $usuario += "Hay commits nuevos en $nombre sin traer."
             }
         }
+    }
+
+    # Dónde está el plugin, para los comandos del kit (comprobar, paquetes, probar-nube).
+    if (Test-Path -LiteralPath (Join-Path $raiz 'rokit.toml')) {
+        $kit = (Resolve-Path -LiteralPath (Join-Path $PSScriptRoot '..')).Path -replace '\\', '/'
+        $contexto += "Kit: <kit> = $kit (comandos en el CLAUDE.md del juego)."
     }
 
     # Studio y rojo serve

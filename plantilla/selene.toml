@@ -1,0 +1,3 @@
+# Lo estricto de este juego se decide aquí, no en el plugin.
+std = "roblox"
+exclude = ["Packages/*", "ServerPackages/*", "src/server/Vendor/*", "src/shared/Net/*"]

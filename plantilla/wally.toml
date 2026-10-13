@@ -1,0 +1,14 @@
+[package]
+name = "alvarocepa/{{nombre}}"
+version = "0.1.0"
+registry = "https://github.com/UpliftGames/wally-index"
+realm = "shared"
+private = true
+
+# Paquetes compartidos (llegan a cliente y servidor): van a Packages/, en ReplicatedStorage.
+[dependencies]
+Trove = "sleitnick/trove@1.8.0"
+
+# Paquetes solo de servidor: van a ServerPackages/. Al añadir el primero, añade también
+# "ServerPackages": { "$path": "ServerPackages" } dentro de ServerStorage en default.project.json.
+[server-dependencies]

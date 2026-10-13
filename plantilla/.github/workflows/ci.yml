@@ -1,0 +1,68 @@
+# CI del juego (roblox-kit). Una sola comprobación final: verde o rojo.
+# - Instala las herramientas fijadas en rokit.toml y los paquetes de Wally.
+# - Pasa `comprobar` entero (formato, lint, tipos, build, pruebas de Lune y reglas).
+# - Si cambió código que corre en el servidor, `probar-nube` en «Pruebas» (subida guardada, nunca publicada).
+# Los scripts vienen del plugin roblox-kit, que es público: no hace falta clave para bajarlos.
+name: CI
+
+on:
+  push:
+    paths-ignore: ["**.md"]
+  workflow_dispatch:
+
+# Un push nuevo cancela la pasada antigua de la misma rama: ahorra minutos.
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+# La CI solo puede leer el repo.
+permissions:
+  contents: read
+
+jobs:
+  comprobar:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      # Acciones de terceros fijadas por su commit exacto.
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+
+      - uses: CompeyDev/setup-rokit@1d9390883f7ebce19d48f5b8d006e11d387c92ab # v0.2.1
+        with:
+          version: v1.2.0
+          cache: true
+
+      - name: Bajar roblox-kit
+        run: git clone --depth 1 https://github.com/AlvaroCepa/roblox-kit "$RUNNER_TEMP/roblox-kit"
+
+      - name: Paquetes
+        run: lune run "$RUNNER_TEMP/roblox-kit/kit/paquetes.luau"
+
+      - name: Comprobar
+        run: lune run "$RUNNER_TEMP/roblox-kit/kit/comprobar.luau"
+
+      - name: ¿Cambió código de servidor?
+        id: servidor
+        env:
+          ANTES: ${{ github.event.before }}
+        run: |
+          if [ -z "$ANTES" ] || [ "$ANTES" = "0000000000000000000000000000000000000000" ] || ! git cat-file -e "$ANTES" 2>/dev/null; then
+            echo "cambia=true" >> "$GITHUB_OUTPUT"
+          elif git diff --quiet "$ANTES" HEAD -- src/server src/shared default.project.json build.project.json net.zap; then
+            echo "cambia=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "cambia=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Probar en la nube
+        if: steps.servidor.outputs.cambia == 'true'
+        env:
+          ROBLOX_API_KEY: ${{ secrets.ROBLOX_API_KEY }}
+        run: |
+          if [ -z "$ROBLOX_API_KEY" ]; then
+            echo "::warning::Falta el secreto ROBLOX_API_KEY: no se prueba en la nube."
+            exit 0
+          fi
+          lune run "$RUNNER_TEMP/roblox-kit/kit/probar-nube.luau"

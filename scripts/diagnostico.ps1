@@ -69,6 +69,30 @@ else {
     } catch { Apuntar 'Rokit' 'falta' $_.Exception.Message }
 }
 
+# 3b. Herramientas del kit (Rojo, Lune, StyLua, Selene, luau-lsp, Wally, Zap), con las versiones de la plantilla.
+# Cada juego las fija en su rokit.toml; aquí se confían y se bajan una vez para que el primer juego no espere.
+$plantilla = Join-Path $raizPlugin 'plantilla'
+$manifiesto = Join-Path $plantilla 'rokit.toml'
+$luneRokit = Join-Path $env:USERPROFILE '.rokit\bin\lune.exe'
+if ((Hay 'rokit') -and (Test-Path -LiteralPath $manifiesto)) {
+    $esperada = ([regex]::Match((Get-Content -LiteralPath $manifiesto -Raw), 'lune-org/lune@([\d\.]+)')).Groups[1].Value
+    Push-Location $plantilla
+    try {
+        $actual = if (Test-Path -LiteralPath $luneRokit) { (& $luneRokit --version 2>$null) -join ' ' } else { '' }
+        if ($actual -match [regex]::Escape($esperada)) { Apuntar 'Herramientas del kit' 'bien' }
+        elseif ($SoloMirar) { Apuntar 'Herramientas del kit' 'falta' 'Se instalan con rokit desde plantilla/rokit.toml.' }
+        else {
+            $herramientas = [regex]::Matches((Get-Content -LiteralPath $manifiesto -Raw), '"([\w\-]+/[\w\-]+)@') | ForEach-Object { $_.Groups[1].Value }
+            rokit trust @herramientas 2>$null | Out-Null
+            rokit install 2>$null | Out-Null
+            $actual = if (Test-Path -LiteralPath $luneRokit) { (& $luneRokit --version 2>$null) -join ' ' } else { '' }
+            if ($actual -match [regex]::Escape($esperada)) { Apuntar 'Herramientas del kit' 'instalado' }
+            else { Apuntar 'Herramientas del kit' 'falta' "rokit install no dejó Lune $esperada. Prueba a mano en $plantilla : rokit install" }
+        }
+    }
+    finally { Pop-Location }
+}
+
 # 4. Blender, su addon del MCP y la telemetría apagada
 $blenderTienda = Get-ChildItem (Join-Path $env:LOCALAPPDATA 'Packages') -Directory -Filter 'BlenderFoundation.Blender_*' -ErrorAction SilentlyContinue | Select-Object -First 1
 if ((Hay 'blender-launcher') -or (Hay 'blender') -or $blenderTienda -or (Test-Path 'C:\Program Files\Blender Foundation')) { Apuntar 'Blender' 'bien' }

@@ -1,0 +1,16 @@
+{
+  "permissions": {
+    "allow": [
+      "mcp__plugin_roblox-kit_Roblox_Studio__get_studio_state",
+      "mcp__plugin_roblox-kit_Roblox_Studio__list_roblox_studios",
+      "mcp__plugin_roblox-kit_Roblox_Studio__get_console_output",
+      "mcp__plugin_roblox-kit_Roblox_Studio__inspect_instance",
+      "mcp__plugin_roblox-kit_Roblox_Studio__search_game_tree",
+      "mcp__plugin_roblox-kit_Roblox_Studio__script_read",
+      "mcp__plugin_roblox-kit_Roblox_Studio__script_grep",
+      "mcp__plugin_roblox-kit_Roblox_Studio__script_search",
+      "mcp__plugin_roblox-kit_Roblox_Studio__screen_capture",
+      "mcp__plugin_roblox-kit_Roblox_Studio__list_plugin_guis"
+    ]
+  }
+}

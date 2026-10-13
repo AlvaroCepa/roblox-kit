@@ -75,7 +75,11 @@ function Salir-Json($Objeto) {
 # Ejecuta un programa y devuelve su código y todo lo que escribió, con tiempo límite.
 # Usa Process y no "& programa 2>&1": en PowerShell 5.1 eso convierte stderr en errores.
 function Ejecutar([string]$Programa, [string[]]$Argumentos = @(), [string]$Carpeta = (Get-Location).Path, [int]$Segundos = 300) {
-    $ruta = (Get-Command $Programa -CommandType Application -ErrorAction SilentlyContinue | Select-Object -First 1).Source
+    # En juegos con rokit.toml, la herramienta de Rokit: si Foreman va antes en el PATH metería otra versión.
+    $ruta = $null
+    $rokit = Join-Path $env:USERPROFILE ".rokit\bin\$Programa.exe"
+    if ((Test-Path -LiteralPath (Join-Path $Carpeta 'rokit.toml')) -and (Test-Path -LiteralPath $rokit)) { $ruta = $rokit }
+    if (-not $ruta) { $ruta = (Get-Command $Programa -CommandType Application -ErrorAction SilentlyContinue | Select-Object -First 1).Source }
     if (-not $ruta) { return [pscustomobject]@{ Codigo = -2; Salida = "No se encuentra '$Programa'." } }
     $psi = New-Object System.Diagnostics.ProcessStartInfo
     $psi.FileName = $ruta

@@ -1,7 +1,7 @@
 {
   "name": "roblox-kit",
   "displayName": "Roblox Kit",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Sistema para hacer juegos de Roblox con Claude Code: frenos y comprobaciones automáticas, MCP de Studio y Blender, scripts de claves y skills de cada oficio.",
   "author": {
     "name": "AlvaroCepa",

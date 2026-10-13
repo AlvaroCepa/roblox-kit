@@ -1,0 +1,24 @@
+{
+  "name": "{{nombre}}",
+  "tree": {
+    "$className": "DataModel",
+    "ReplicatedStorage": {
+      "$ignoreUnknownInstances": true,
+      "Shared": { "$path": "src/shared" },
+      "Packages": { "$path": "Packages" }
+    },
+    "ServerScriptService": {
+      "$ignoreUnknownInstances": true,
+      "Server": { "$path": "src/server" }
+    },
+    "StarterPlayer": {
+      "$ignoreUnknownInstances": true,
+      "StarterPlayerScripts": {
+        "$ignoreUnknownInstances": true,
+        "Client": { "$path": "src/client" }
+      }
+    },
+    "Workspace": { "$ignoreUnknownInstances": true },
+    "Lighting": { "$ignoreUnknownInstances": true }
+  }
+}

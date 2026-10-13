@@ -1,0 +1,9 @@
+# Paquetes de Wally: se instalan con `lune run <plugin>/kit/paquetes.luau`.
+Packages/
+ServerPackages/
+# Generados en cada PC.
+sourcemap.json
+*.rbxl
+*.rbxlx
+*.rbxl.lock
+.kit/

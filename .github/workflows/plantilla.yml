@@ -1,0 +1,43 @@
+# Autoprueba del plugin: en cada cambio del kit o de la plantilla, crea un juego desde cero en Linux,
+# instala sus paquetes y le pasa `comprobar` entero, como haría la CI de un juego.
+# Si esto falla, cualquier juego nuevo nacería roto.
+name: Plantilla
+
+on:
+  push:
+    paths: ["kit/**", "plantilla/**", ".github/workflows/plantilla.yml"]
+  workflow_dispatch:
+
+concurrency:
+  group: plantilla-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  plantilla:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - uses: CompeyDev/setup-rokit@1d9390883f7ebce19d48f5b8d006e11d387c92ab # v0.2.1
+        with:
+          version: v1.2.0
+          path: plantilla
+          cache: true
+
+      - name: Crear un juego desde la plantilla
+        working-directory: plantilla
+        run: lune run ../kit/juego-nuevo.luau "$RUNNER_TEMP/juego" --nombre "Prueba CI"
+
+      - name: Herramientas y paquetes
+        working-directory: ${{ runner.temp }}/juego
+        run: |
+          rokit install --no-trust-check
+          lune run "$GITHUB_WORKSPACE/kit/paquetes.luau"
+
+      - name: Comprobar
+        working-directory: ${{ runner.temp }}/juego
+        run: lune run "$GITHUB_WORKSPACE/kit/comprobar.luau"
