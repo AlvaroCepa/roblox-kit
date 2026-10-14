@@ -1,7 +1,7 @@
 --!strict
 -- juego-nuevo: crea la carpeta de un juego nuevo a partir de plantilla/ del plugin.
 --   lune run <plugin>/kit/juego-nuevo.luau <carpeta-destino> --nombre <nombre-del-juego>
--- Copia la plantilla, pone el nombre y copia el cargador del plugin (kit/Loader.luau) con su versión.
+-- Copia la plantilla, pone el nombre y copia los módulos del kit (kit/juego/*, con su versión) a src/shared/Kit.
 -- No toca git ni GitHub ni instala nada: eso lo hace la skill juego-nuevo, paso a paso.
 
 local fs = require("@lune/fs")
@@ -48,7 +48,12 @@ for _, relativa in Comun.archivos(plantilla) do
 	copiados += 1
 end
 
+-- Módulos del kit (cargador, UI, marcas, efectos...): copias del plugin con su versión en la segunda línea.
 fs.writeDir(Comun.unir(destino, "src/shared/Kit"))
-fs.writeFile(Comun.unir(destino, "src/shared/Kit/Loader.luau"), fs.readFile(Comun.unir(plugin, "kit", "Loader.luau")))
+for _, archivo in Comun.archivos(Comun.unir(plugin, "kit", "juego")) do
+	local origen = fs.readFile(Comun.unir(plugin, "kit", "juego", archivo))
+	fs.writeFile(Comun.unir(destino, "src/shared/Kit", archivo), origen)
+	copiados += 1
+end
 
-print(`juego-nuevo: creado «{nombre}» en {destino} ({copiados + 1} archivos).`)
+print(`juego-nuevo: creado «{nombre}» en {destino} ({copiados} archivos).`)

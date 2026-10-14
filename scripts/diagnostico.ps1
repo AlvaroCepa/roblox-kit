@@ -139,6 +139,20 @@ else {
     if (Ruta-Kaggle) { Apuntar 'CLI de Kaggle' 'instalado' } else { Apuntar 'CLI de Kaggle' 'falta' 'pip no pudo instalar kaggle.' }
 }
 
+# 5b. Python para imágenes: Pillow (juntar capturas al lado de referencias) y rembg (quitar el fondo de los iconos)
+function Ruta-Rembg {
+    $r = (Get-Command rembg.exe -ErrorAction SilentlyContinue | Select-Object -First 1).Source
+    if (-not $r) { $r = Get-ChildItem (Join-Path $env:APPDATA 'Python\Python3*\Scripts\rembg.exe') -ErrorAction SilentlyContinue | Select-Object -First 1 -ExpandProperty FullName }
+    return $r
+}
+$hayPillow = (Hay 'py') -and ($(py -c "import PIL; print(1)" 2>$null) -eq '1')
+if ($hayPillow -and (Ruta-Rembg)) { Apuntar 'Pillow y rembg' 'bien' }
+elseif ($SoloMirar -or -not (Hay 'py')) { Apuntar 'Pillow y rembg' 'falta' 'py -m pip install --user pillow "rembg[cpu,cli]==2.0.67"' }
+else {
+    py -m pip install --user --quiet pillow "rembg[cpu,cli]==2.0.67" | Out-Null
+    if (Ruta-Rembg) { Apuntar 'Pillow y rembg' 'instalado' 'La primera vez que se use, rembg baja su modelo (176 MB).' } else { Apuntar 'Pillow y rembg' 'falta' 'pip no pudo instalar rembg.' }
+}
+
 # 6. MCP de Google Flow (copia arreglada que lleva el plugin; va en la cuenta de cada uno)
 $mcpUsuario = @{}
 if (Hay 'node') {

@@ -1,0 +1,32 @@
+# Asphalt sube assets/ al GRUPO con la clave del bot y genera src/shared/Assets/<entrada>.luau con los ids.
+# Nunca se lanza a mano: kit/subir-assets.ps1 (lee la clave cifrada del PC; el hook pregunta antes).
+# Para ver una imagen en Studio sin subirla: asphalt sync studio (ese Assets NO se sube a git).
+# asphalt.lock.toml va en git: así nadie vuelve a subir lo mismo.
+
+[creator]
+type = "group"
+id = 33731795 # Inazuma Revolutions
+
+[codegen]
+style = "nested"
+strip_extensions = true
+
+[inputs.ui]
+path = "assets/ui/**/*.{png,svg}"
+output_path = "src/shared/Assets"
+
+[inputs.vfx]
+path = "assets/vfx/**/*.png"
+output_path = "src/shared/Assets"
+
+[inputs.sounds]
+path = "assets/sounds/**/*.{ogg,mp3,wav,flac}"
+output_path = "src/shared/Assets"
+
+[inputs.anims]
+path = "assets/anims/**/*.rbxm"
+output_path = "src/shared/Assets"
+
+[inputs.models]
+path = "assets/models/**/*.{glb,png}"
+output_path = "src/shared/Assets"

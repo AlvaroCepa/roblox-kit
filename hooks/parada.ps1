@@ -1,8 +1,11 @@
 ﻿# Stop y SubagentStop: al terminar cada turno (o un subagente), comprueba el código antes de pasárselo al usuario.
 # - Solo si este agente ha cambiado .lua/.luau desde la última comprobación buena (marca de tras-herramienta.ps1).
-# - Juegos con el kit (rokit.toml): kit/comprobar.luau --parada (StyLua, Selene, luau-lsp, rojo build, Lune y
-#   reglas). Si todo va bien pero el código de servidor cambió desde la última pasada buena de probar-nube,
-#   frena una vez para pedir probar-nube (no lo lanza el hook: sube a «Pruebas» y tarda un minuto).
+# - Juegos con el kit (rokit.toml): kit/comprobar.luau --parada (StyLua, Selene, luau-lsp, rojo build, Lune,
+#   reglas y oficios). Si todo va bien pero falta una pasada que no hace comprobar, frena una vez para pedirla
+#   (no las lanza el hook):
+#     nube: el código de servidor cambió desde la última probar-nube (sube a «Pruebas», un minuto);
+#     ui / mapa: cambiaron desde la última pasada buena de su comprobador en Studio. Si Studio está cerrado,
+#     no frena: solo avisa al usuario.
 # - Juegos antiguos (sin rokit.toml): rojo build y su Comprobar.ps1, si lo tienen.
 # - Si algo falla, frena UNA vez para que Claude lo arregle. Si vuelve a fallar, no frena más: avisa al usuario.
 . "$PSScriptRoot\comun.ps1"
@@ -34,15 +37,34 @@ try {
             exit 0
         }
         if ($r.Codigo -eq 3) {
-            # Comprobaciones bien; falta la prueba en la nube del código de servidor nuevo.
+            # Comprobaciones bien; faltan pasadas que no hace comprobar (líneas «pendiente: x»).
             Remove-Item -LiteralPath $marca -ErrorAction SilentlyContinue
-            Anotar $entrada 'parada' @{ resultado = 'bien'; pasos = $pasos; nube = 'pendiente' }
+            $pendientes = @([regex]::Matches($r.Salida, '(?m)^pendiente: (\w+)') | ForEach-Object { $_.Groups[1].Value })
+            Anotar $entrada 'parada' @{ resultado = 'bien'; pasos = $pasos; pendientes = $pendientes }
             if ($repetido) { exit 0 }
-            $ps1 = (Join-Path $kit 'kit\probar-nube.ps1') -replace '\\', '/'
-            Salir-Json @{
-                decision = 'block'
-                reason   = "roblox-kit: comprobar va bien, pero el código de servidor cambió desde la última prueba en la nube. Antes de terminar, lanza probar-nube (sube a «Pruebas» guardado y tarda un minuto): powershell -NoProfile -ExecutionPolicy Bypass -File `"$ps1`". Si falla, arréglalo. Si el usuario ha dicho que ahora no, sigue sin lanzarlo."
+            $studio = [bool](Get-Process -Name 'RobloxStudioBeta' -ErrorAction SilentlyContinue)
+            $kitR = $kit -replace '\\', '/'
+            $pedir = @()
+            $avisar = @()
+            if ($pendientes -contains 'nube') {
+                $pedir += "- probar-nube (el código de servidor cambió; sube a «Pruebas» guardado y tarda un minuto): powershell -NoProfile -ExecutionPolicy Bypass -File `"$kitR/kit/probar-nube.ps1`""
             }
+            foreach ($que in @('ui', 'mapa')) {
+                if ($pendientes -notcontains $que) { continue }
+                $modulo = if ($que -eq 'ui') { 'UICheck' } else { 'MapCheck' }
+                if ($studio) {
+                    $pedir += "- el comprobador de $que en Studio (cambió desde su última pasada buena; con Rojo conectado, en modo Edit): execute_luau `"return require(game.ReplicatedStorage.Shared.Kit.$modulo).run()`""
+                }
+                else { $avisar += $que }
+            }
+            $salida = @{}
+            if ($avisar.Count) { $salida.systemMessage = "roblox-kit: cambió $($avisar -join ' y ') y Studio está cerrado: falta pasar su comprobador en Studio antes de darlo por bueno." }
+            if ($pedir.Count) {
+                $salida.decision = 'block'
+                $salida.reason = "roblox-kit: comprobar va bien, pero antes de enseñárselo al usuario falta:`n$($pedir -join "`n")`nSi falla, arréglalo. Si el usuario ha dicho que ahora no, sigue sin lanzarlo."
+            }
+            if ($salida.Count) { Salir-Json $salida }
+            exit 0
         }
         if ($r.Codigo -eq -2) {
             # Sin Lune no hay comprobar: se avisa una vez al usuario y no se frena.

@@ -7,3 +7,5 @@ sourcemap.json
 *.rbxlx
 *.rbxl.lock
 .kit/
+# Pruebas locales de Asphalt (asphalt sync debug).
+.asphalt-debug/

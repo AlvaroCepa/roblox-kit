@@ -6,6 +6,9 @@
 #   lo estricto de cada juego se decide en su selene.toml.
 #   Además deja la marca de "código cambiado" para el hook de Stop.
 # - insert_asset: recuerda revisar si lo insertado trae scripts (la Toolbox puede traer scripts maliciosos).
+# - execute_luau: si su salida dice «roblox-kit comprobar-ui: bien» o «comprobar-mapa: bien» (los comprobadores
+#   del kit en Studio), apunta la pasada buena con kit/pasada.luau: así el hook de Stop no la vuelve a pedir
+#   hasta que cambie la UI o el mapa.
 . "$PSScriptRoot\comun.ps1"
 
 try {
@@ -22,6 +25,23 @@ try {
                 additionalContext = "roblox-kit: acabas de insertar '$nombre'. Los modelos de la Toolbox pueden traer scripts maliciosos. Antes de seguir, busca scripts dentro (execute_luau en Edit: GetDescendants del objeto insertado, filtrando IsA('LuaSourceContainer')). Si hay alguno, enséñale al usuario su nombre y dónde está antes de usarlo o borrarlo."
             }
         }
+    }
+
+    if ($herramienta -eq 'execute_luau') {
+        $raiz = Raiz-Proyecto $entrada
+        if (-not (Test-Path -LiteralPath (Join-Path $raiz 'rokit.toml'))) { exit 0 }
+        $respuesta = $entrada.tool_response | ConvertTo-Json -Depth 8 -Compress
+        $kit = (Resolve-Path -LiteralPath (Join-Path $PSScriptRoot '..')).Path
+        foreach ($nombre in @('ui', 'mapa')) {
+            if ($respuesta -match "roblox-kit comprobar-${nombre}: bien") {
+                $r = Ejecutar 'lune' @('run', (Join-Path $kit 'kit\pasada.luau'), $nombre) $raiz 60
+                Anotar $entrada 'pasada' @{ que = $nombre; ok = ($r.Codigo -eq 0) }
+            }
+            elseif ($respuesta -match "roblox-kit comprobar-${nombre}: falla") {
+                Anotar $entrada 'pasada' @{ que = $nombre; ok = $false }
+            }
+        }
+        exit 0
     }
 
     $archivo = [string]$entrada.tool_input.file_path

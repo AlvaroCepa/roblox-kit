@@ -1,5 +1,5 @@
 {
-  "description": "roblox-kit: información al empezar, freno de Studio y assets, formato y lint al editar, comprobaciones al terminar y registro para elegir modelo.",
+  "description": "roblox-kit: información al empezar, frenos de Studio, assets, PRs y main, formato y lint al editar, comprobaciones al terminar y registro para elegir modelo.",
   "hooks": {
     "SessionStart": [
       {
@@ -37,6 +37,64 @@
             "onFailure": "block"
           }
         ]
+      },
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "powershell.exe",
+            "args": ["-NoProfile", "-NonInteractive", "-ExecutionPolicy", "Bypass", "-File", "${CLAUDE_PLUGIN_ROOT}/hooks/freno-ordenes.ps1"],
+            "timeout": 40,
+            "if": "Bash(powershell *)"
+          },
+          {
+            "type": "command",
+            "command": "powershell.exe",
+            "args": ["-NoProfile", "-NonInteractive", "-ExecutionPolicy", "Bypass", "-File", "${CLAUDE_PLUGIN_ROOT}/hooks/freno-ordenes.ps1"],
+            "timeout": 40,
+            "if": "Bash(powershell.exe *)"
+          },
+          {
+            "type": "command",
+            "command": "powershell.exe",
+            "args": ["-NoProfile", "-NonInteractive", "-ExecutionPolicy", "Bypass", "-File", "${CLAUDE_PLUGIN_ROOT}/hooks/freno-ordenes.ps1"],
+            "timeout": 40,
+            "if": "Bash(asphalt *)"
+          },
+          {
+            "type": "command",
+            "command": "powershell.exe",
+            "args": ["-NoProfile", "-NonInteractive", "-ExecutionPolicy", "Bypass", "-File", "${CLAUDE_PLUGIN_ROOT}/hooks/freno-ordenes.ps1"],
+            "timeout": 40,
+            "if": "Bash(gh pr merge *)"
+          },
+          {
+            "type": "command",
+            "command": "powershell.exe",
+            "args": ["-NoProfile", "-NonInteractive", "-ExecutionPolicy", "Bypass", "-File", "${CLAUDE_PLUGIN_ROOT}/hooks/freno-ordenes.ps1"],
+            "timeout": 40,
+            "if": "Bash(git push)"
+          },
+          {
+            "type": "command",
+            "command": "powershell.exe",
+            "args": ["-NoProfile", "-NonInteractive", "-ExecutionPolicy", "Bypass", "-File", "${CLAUDE_PLUGIN_ROOT}/hooks/freno-ordenes.ps1"],
+            "timeout": 40,
+            "if": "Bash(git push *)"
+          }
+        ]
+      },
+      {
+        "matcher": "PowerShell",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "powershell.exe",
+            "args": ["-NoProfile", "-NonInteractive", "-ExecutionPolicy", "Bypass", "-File", "${CLAUDE_PLUGIN_ROOT}/hooks/freno-ordenes.ps1"],
+            "timeout": 40
+          }
+        ]
       }
     ],
     "PostToolUse": [
@@ -52,7 +110,7 @@
         ]
       },
       {
-        "matcher": "^mcp__.*__insert_asset$",
+        "matcher": "^mcp__.*__(insert_asset|execute_luau)$",
         "hooks": [
           {
             "type": "command",

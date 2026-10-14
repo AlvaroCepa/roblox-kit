@@ -1,0 +1,66 @@
+# Ficha de un modelo (roblox-kit, skill modelos-3d): assets/3d/<modelo>/ficha.toml. Ejemplo: el perro de la prueba.
+# Las reglas y piezas las coloca Claude mirando el modelo en Blender (vista_reglas.py) y se guardan aquí.
+nombre = "Perro"
+que_es = "Cachorro a cuatro patas. Caso de prueba: partes finas (orejas, patas y cola)."
+via = "imagen > TRELLIS (forma) > Blender pinta con reglas"
+imagen = "imagen.png"
+altura = 2.5          # studs
+triangulos = 3000
+
+# Zonas de color. «en_imagen» es el color aproximado en la imagen de partida (sirve para
+# reconocer la zona al proyectarla sobre la malla); «color» es el de la paleta.
+[zonas]
+cuerpo     = { en_imagen = "#c27a3a", color = "marron" }
+orejas     = { en_imagen = "#6b3a22", color = "marron_oscuro" }
+claro      = { en_imagen = "#ecdfc4", color = "crema" }        # hocico, pecho, punta de la cola
+ojos_nariz = { en_imagen = "#2a140c", color = "negro_ojos" }
+
+[mutaciones.dorado]
+cuerpo = "oro"
+orejas = "oro_oscuro"
+claro  = "oro_claro"
+
+# ---- Pintado con reglas (studs: x = lado, -y = frente, z = arriba desde el suelo). Cada regla pinta encima.
+[[regla]]  # orejas caídas
+tipo = "elipsoide"
+zona = "orejas"
+centro = [0.75, -0.9, 1.9]
+radios = [0.22, 0.55, 0.65]
+espejo = true
+
+[[regla]]  # hocico
+tipo = "elipsoide"
+zona = "claro"
+centro = [0, -1.7, 1.6]
+radios = [0.45, 0.4, 0.3]
+
+[[regla]]  # mancha de la frente
+tipo = "elipsoide"
+zona = "claro"
+centro = [0, -1.6, 2.1]
+radios = [0.13, 0.4, 0.35]
+
+[[regla]]  # pecho
+tipo = "elipsoide"
+zona = "claro"
+centro = [0, -1.15, 0.82]
+radios = [0.38, 0.35, 0.33]
+
+[[regla]]  # punta de la cola
+tipo = "elipsoide"
+zona = "claro"
+centro = [0, 1.6, 2.3]
+radios = [0.2, 0.25, 0.25]
+
+# ---- Piezas: rayo desde delante en (x, z); radio en studs
+[[pieza]]
+zona = "ojos_nariz"
+en = [0.3, 2.0]
+radio = 0.11
+brillo = true
+espejo = true
+
+[[pieza]]
+zona = "ojos_nariz"
+en = [0, 1.68]
+radio = 0.11

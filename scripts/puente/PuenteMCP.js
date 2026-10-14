@@ -8,23 +8,7 @@ const { spawn } = require("child_process");
 const http = require("http");
 const path = require("path");
 
-// Misma regla que el freno de roblox-kit (hooks/freno.ps1), pero negando en vez de preguntar.
-function motivoParaNegar(nombre, args) {
-  if (nombre === "multi_edit") return "multi_edit edita o crea scripts en Studio; el código vive en el repo y lo pasa Rojo";
-  if (nombre === "upload_image" || nombre === "store_image" || nombre.startsWith("generate_"))
-    return nombre + " sube o crea assets a nombre de quien tiene Studio abierto; hazlo desde Claude Code, que pide permiso";
-  if (nombre === "execute_luau" && args && args.datamodel_type === "Edit") {
-    const codigo = String(args.code || "");
-    if (
-      /\.Source\s*=(?!=)/.test(codigo) ||
-      /\[\s*["']Source["']\s*\]\s*=(?!=)/.test(codigo) ||
-      /UpdateSourceAsync/.test(codigo) ||
-      /Instance\.new\s*\(\s*["'](Script|LocalScript|ModuleScript)["']/.test(codigo)
-    )
-      return "este execute_luau en Edit cambia o crea scripts en Studio; el código vive en el repo y lo pasa Rojo";
-  }
-  return null;
-}
+const { motivoParaNegar } = require("./reglas");
 
 const bat = path.join(process.env.LOCALAPPDATA, "Roblox", "mcp.bat");
 const hijo = spawn("cmd.exe", ["/c", bat], { stdio: ["pipe", "pipe", "pipe"] });

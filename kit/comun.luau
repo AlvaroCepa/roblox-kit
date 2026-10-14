@@ -130,28 +130,80 @@ function Comun.carpetaKit(raiz: string): string
 	return carpeta
 end
 
--- Huella del código que corre en el servidor (src/server y src/shared, más el proyecto y los remotos).
--- probar-nube la guarda al pasar y comprobar --parada la compara para saber si toca volver a probar en la nube.
-function Comun.huellaServidor(raiz: string): string
+-- Huella de un conjunto de carpetas y archivos del juego (los que no existen no cuentan).
+function Comun.huella(raiz: string, rutas: { string }): string
 	local trozos = {}
-	for _, carpeta in { "src/server", "src/shared" } do
-		for _, archivo in Comun.archivos(Comun.unir(raiz, carpeta)) do
-			table.insert(trozos, carpeta .. "/" .. archivo)
-			table.insert(trozos, (string.gsub(fs.readFile(Comun.unir(raiz, carpeta, archivo)), "\r\n", "\n")))
+	local function sumar(relativa: string)
+		table.insert(trozos, relativa)
+		local contenido = fs.readFile(Comun.unir(raiz, relativa))
+		-- Los de texto, sin \r: la huella sale igual en Windows y en Linux.
+		if not string.match(relativa, "%.rbxm$") and not string.match(relativa, "%.png$") then
+			contenido = string.gsub(contenido, "\r\n", "\n")
 		end
+		table.insert(trozos, contenido)
 	end
-	for _, archivo in { "default.project.json", "build.project.json", "net.zap" } do
-		local ruta = Comun.unir(raiz, archivo)
-		if fs.isFile(ruta) then
-			table.insert(trozos, archivo)
-			table.insert(trozos, (string.gsub(fs.readFile(ruta), "\r\n", "\n")))
+	for _, ruta in rutas do
+		local completa = Comun.unir(raiz, ruta)
+		if fs.isDir(completa) then
+			for _, archivo in Comun.archivos(completa) do
+				sumar(ruta .. "/" .. archivo)
+			end
+		elseif fs.isFile(completa) then
+			sumar(ruta)
 		end
 	end
 	return serde.hash("sha256", table.concat(trozos, "\0"))
 end
 
+-- Qué mira cada pasada que se apunta (nube = probar-nube; ui y mapa = sus comprobadores en Studio).
+Comun.HUELLAS = {
+	nube = { "src/server", "src/shared", "default.project.json", "build.project.json", "net.zap" },
+	ui = {
+		"src/client/UI",
+		"src/shared/Data/Style.luau",
+		"src/shared/Data/Texts.luau",
+		"src/shared/Kit/UI.luau",
+		"src/shared/Kit/Screens.luau",
+		"assets/ui",
+	},
+	mapa = { "map", "src/shared/Data/Map.luau" },
+}
+
+-- Huella del código que corre en el servidor. probar-nube la guarda al pasar y comprobar --parada la compara
+-- para saber si toca volver a probar en la nube.
+function Comun.huellaServidor(raiz: string): string
+	return Comun.huella(raiz, Comun.HUELLAS.nube)
+end
+
+-- Archivo donde se apunta la última pasada buena de `nombre` (nube, ui, mapa).
+function Comun.rutaPasada(raiz: string, nombre: string): string
+	return Comun.unir(Comun.carpetaKit(raiz), nombre .. "-ok.txt")
+end
+
 function Comun.rutaHuellaNube(raiz: string): string
-	return Comun.unir(Comun.carpetaKit(raiz), "nube-ok.txt")
+	return Comun.rutaPasada(raiz, "nube")
+end
+
+-- ¿Ha cambiado `nombre` desde su última pasada buena?
+function Comun.pendiente(raiz: string, nombre: string): boolean
+	local ruta = Comun.rutaPasada(raiz, nombre)
+	local guardada = if fs.isFile(ruta) then fs.readFile(ruta) else ""
+	return guardada ~= Comun.huella(raiz, Comun.HUELLAS[nombre])
+end
+
+-- Carga un archivo de datos del juego (Luau puro, como src/shared/Data/Style.luau) y devuelve lo que devuelve.
+-- Tiene a mano los tipos de Roblox (Vector3, NumberRange, Enum...). Lune no deja hacer require de rutas
+-- absolutas, por eso se carga el texto.
+function Comun.cargarDatos(ruta: string): any
+	local roblox = require("@lune/roblox") :: any
+	local luau = require("@lune/luau")
+	local entorno = {}
+	for clave, valor in roblox do
+		if typeof(clave) == "string" and string.match(clave, "^%u") then
+			entorno[clave] = valor
+		end
+	end
+	return luau.load(fs.readFile(ruta), { debugName = ruta, environment = entorno })()
 end
 
 -- ¿Hay clave de Open Cloud en este PC (o en la CI)?

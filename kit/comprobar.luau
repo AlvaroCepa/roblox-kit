@@ -4,11 +4,14 @@
 --   lune run <plugin>/kit/comprobar.luau                       todos los pasos
 --   lune run <plugin>/kit/comprobar.luau --pasos tipos,pruebas  solo esos
 --   lune run <plugin>/kit/comprobar.luau src/x.luau ...         solo esos archivos (por defecto stylua y selene)
---   --parada  (lo usa el hook de Stop) sale con código 3 si todo va bien pero el código de servidor cambió
---             desde la última pasada buena de probar-nube.
+--   --parada  (lo usa el hook de Stop) sale con código 3 si todo va bien pero falta una pasada que no hace
+--             comprobar: «pendiente: nube» (el código de servidor cambió desde la última probar-nube),
+--             «pendiente: ui» o «pendiente: mapa» (cambiaron desde la última pasada buena en Studio).
 --
 -- Pasos: stylua (solo mira, no cambia nada), selene, tipos (luau-lsp), build (rojo), pruebas (Lune), reglas
--- (los módulos de Rules no usan game ni servicios) y cargador (aviso si la copia del juego es antigua).
+-- (los módulos de Rules no usan game ni servicios), ids (nada de ids sueltos), ui (textos, colores y fuente
+-- de la hoja de estilo), efectos (topes de VFX y sonidos bien escritos), mapa (los .rbxm de map/ sin Studio)
+-- y kit (aviso si los módulos del kit del juego son más viejos que los del plugin). Los de oficios, en oficios.luau.
 -- Pasa todos aunque falle uno. Si todo va bien, una línea; si algo falla, el resumen, y el detalle en
 -- .kit/comprobar.log. Lo estricto de cada juego va en su configuración (selene.toml, .luaurc), no aquí.
 
@@ -17,6 +20,7 @@ local net = require("@lune/net")
 local process = require("@lune/process")
 
 local Comun = require("./comun")
+local Oficios = require("./oficios")
 
 local inicio = os.clock()
 local opciones, sueltos = Comun.argumentos()
@@ -37,9 +41,10 @@ for _, c in { "src", "tests" } do
 end
 
 -- Código que no es nuestro o es generado: no se le exige nada.
-local IGNORAR = { "Packages/**", "ServerPackages/**", "src/server/Vendor/**", "src/shared/Net/**" }
+local IGNORAR =
+	{ "Packages/**", "ServerPackages/**", "src/server/Vendor/**", "src/shared/Net/**", "src/shared/Assets/**" }
 
-local todos = { "stylua", "selene", "tipos", "build", "pruebas", "reglas", "cargador" }
+local todos = { "stylua", "selene", "tipos", "build", "pruebas", "reglas", "ids", "ui", "efectos", "mapa", "kit" }
 local elegidos: { [string]: boolean } = {}
 if typeof(opciones.pasos) == "string" then
 	for paso in string.gmatch(opciones.pasos, "[^,%s]+") do
@@ -358,26 +363,6 @@ local function pasoReglas(): Paso?
 	}
 end
 
--- 7. Cargador: la copia del juego viene del plugin. Si el plugin tiene una versión nueva, solo avisa.
-local function pasoCargador(): Paso?
-	local copia = Comun.unir(raiz, "src/shared/Kit/Loader.luau")
-	if not fs.isFile(copia) then
-		return nil
-	end
-	local function version(ruta: string): number
-		return tonumber(string.match(fs.readFile(ruta), "roblox%-kit Loader v(%d+)")) or 0
-	end
-	local delJuego, delPlugin = version(copia), version(Comun.unir(kit, "Loader.luau"))
-	if delJuego < delPlugin then
-		return {
-			nombre = "cargador",
-			ok = true,
-			aviso = `el cargador del juego es v{delJuego} y el del plugin v{delPlugin}: copia kit/Loader.luau del plugin a src/shared/Kit/Loader.luau cuando convenga`,
-		}
-	end
-	return { nombre = "cargador", ok = true }
-end
-
 local funciones: { [string]: () -> Paso? } = {
 	stylua = pasoStylua,
 	selene = pasoSelene,
@@ -385,7 +370,21 @@ local funciones: { [string]: () -> Paso? } = {
 	build = pasoBuild,
 	pruebas = pasoPruebas,
 	reglas = pasoReglas,
-	cargador = pasoCargador,
+	ids = function()
+		return Oficios.ids(raiz)
+	end,
+	ui = function()
+		return Oficios.ui(raiz)
+	end,
+	efectos = function()
+		return Oficios.efectos(raiz)
+	end,
+	mapa = function()
+		return Oficios.mapa(raiz)
+	end,
+	kit = function()
+		return Oficios.kit(raiz, Comun.raizPlugin())
+	end,
 }
 
 for _, nombre in todos do
@@ -430,11 +429,25 @@ if #fallan == 0 then
 	for _, a in avisos do
 		print(a)
 	end
-	if opciones.parada and existe("src") and Comun.hayClaveNube() then
-		local ruta = Comun.rutaHuellaNube(raiz)
-		local guardada = if fs.isFile(ruta) then fs.readFile(ruta) else ""
-		if guardada ~= Comun.huellaServidor(raiz) then
-			print("nube: el código de servidor cambió desde la última pasada buena de probar-nube")
+	if opciones.parada then
+		-- Pasadas que no hace comprobar: las pide el hook de Stop (una vez) si cambió lo suyo.
+		local pendientes = {}
+		if existe("src") and Comun.hayClaveNube() and Comun.pendiente(raiz, "nube") then
+			table.insert(pendientes, "nube")
+		end
+		if existe("src/client/UI") and Comun.pendiente(raiz, "ui") then
+			table.insert(pendientes, "ui")
+		end
+		local hayMapa = #Comun.archivos(Comun.unir(raiz, "map"), function(r)
+			return string.match(r, "%.rbxm$") ~= nil
+		end) > 0
+		if hayMapa and Comun.pendiente(raiz, "mapa") then
+			table.insert(pendientes, "mapa")
+		end
+		for _, p in pendientes do
+			print("pendiente: " .. p)
+		end
+		if #pendientes > 0 then
 			process.exit(3)
 		end
 	end

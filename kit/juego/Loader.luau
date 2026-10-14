@@ -1,6 +1,6 @@
 --!strict
 -- roblox-kit Loader v1
--- Copia del original del plugin (kit/Loader.luau). No se edita en el juego: se actualiza desde el plugin.
+-- Copia del original del plugin (kit/juego/Loader.luau). No se edita en el juego: se actualiza desde el plugin.
 --
 -- Arranca los sistemas de una carpeta en dos fases, como Knit y Nevermore:
 --   1. init() de todos: se preparan y se conectan. No debe esperar (nada de task.wait ni llamadas que esperen).

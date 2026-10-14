@@ -1,0 +1,7 @@
+{
+  "name": "Ambience",
+  "tree": {
+    "$className": "Lighting",
+    "$ignoreUnknownInstances": true
+  }
+}

@@ -1,0 +1,35 @@
+# Hoja de estilo 3D del juego (roblox-kit, skill modelos-3d). Va en assets/3d/estilo3d.toml.
+# Se saca de la imagen de concepto del juego. Las fichas solo pueden usar colores de esta paleta.
+# EJEMPLO: es la de la prueba de las mascotas (12/10/2026), redondita y lisa; NO es el estilo de los juegos de
+# Álvaro. Cámbiala entera al empezar el juego.
+
+acabado = "liso"            # liso | facetado
+detalle = "bajo"            # formas gruesas y simples, sin pelo ni plumas sueltas
+altura_jugador = 5.0        # studs, R15 de referencia
+
+[tamanos]                   # altura en studs
+mascota = 2.5
+
+[triangulos]
+mascota = 3000              # objetivo; el máximo absoluto de cualquier modelo es 20.000
+
+[paleta]
+negro_ojos     = "#141414"
+gris_oscuro    = "#3d3b3e"
+gris           = "#7c7a80"
+gris_claro     = "#dcd7d3"
+marron_oscuro  = "#5e3322"
+marron         = "#b06a33"
+marron_rojizo  = "#9a5f3e"
+crema          = "#efe4cd"
+naranja        = "#f2a04a"
+# colores de las mutaciones
+hielo          = "#e9f1f7"
+hielo_oscuro   = "#7fa7c9"
+blanco         = "#ffffff"
+oro            = "#e8b23a"
+oro_oscuro     = "#b9781a"
+oro_claro      = "#fff1b8"
+noche          = "#3b3f7a"
+noche_claro    = "#c9c3ef"
+amarillo_luz   = "#ffd34d"

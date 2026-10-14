@@ -2,3 +2,4 @@ Packages/
 ServerPackages/
 src/server/Vendor/
 src/shared/Net/
+src/shared/Assets/

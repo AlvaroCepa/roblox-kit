@@ -1,0 +1,33 @@
+{
+  "name": "{{nombre}}",
+  "tree": {
+    "$className": "DataModel",
+    "ReplicatedStorage": {
+      "$ignoreUnknownInstances": true,
+      "Shared": { "$path": "src/shared" },
+      "Models": { "$path": "models" },
+      "Packages": { "$path": "Packages" }
+    },
+    "ServerScriptService": {
+      "$ignoreUnknownInstances": true,
+      "Server": { "$path": "src/server" }
+    },
+    "ServerStorage": {
+      "$ignoreUnknownInstances": true,
+      "MapPieces": { "$path": "map/pieces" },
+      "Prefabs": { "$path": "map/prefabs" }
+    },
+    "StarterPlayer": {
+      "$ignoreUnknownInstances": true,
+      "StarterPlayerScripts": {
+        "$ignoreUnknownInstances": true,
+        "Client": { "$path": "src/client" }
+      }
+    },
+    "Workspace": {
+      "$ignoreUnknownInstances": true,
+      "Map": { "$path": "map/fixed" }
+    },
+    "Lighting": { "$path": "map/Ambience.project.json" }
+  }
+}
