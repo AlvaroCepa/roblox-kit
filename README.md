@@ -9,7 +9,8 @@ usa lo instala desde aquí y recibe las actualizaciones. Las ideas de mejora lle
 
 Si ya tienes todo lo demás y solo falta el plugin:
 ```
-/plugin install roblox-kit --marketplace AlvaroCepa/roblox-kit
+/plugin marketplace add AlvaroCepa/roblox-kit
+/plugin install roblox-kit@roblox-kit
 ```
 
 ## Qué trae
@@ -86,9 +87,10 @@ animaciones como datos, `assets/` + `asphalt.toml` (sube al grupo), `map/` y `bu
 **Autoprueba** (`.github/workflows/plantilla.yml`): en cada cambio de `kit/` o `plantilla/`, crea un juego en
 Linux y le pasa `comprobar`.
 
-**Por probar en su primer uso real:** `guardar-mapa` y `captura.js` con Studio abierto, los comprobadores de UI y
-mapa en Studio, `trellis.ps1` (cronometrando una mascota), el terreno, la prueba R6 y la investigación de packs de
-VFX y sonido (se hace al empezar con cada oficio).
+**Probado en Studio** (ensayo general, 0.4.0): TRELLIS en Kaggle de principio a fin, comprobadores de UI y mapa,
+capturas, `guardar-mapa`, Scatter, efectos/sonidos/animaciones de una línea, `comprobar` y `probar-nube`.
+**Por probar en su primer uso real:** subir de verdad un sonido o una animación al grupo, Rojo en directo, el
+terreno, un mapa grande, la prueba R6 y la investigación de packs de VFX y sonido (se hace al empezar con cada oficio).
 
 ## Desarrollo
 - Probar sin instalar: `claude --plugin-dir "<esta carpeta>"`.

@@ -18,8 +18,7 @@ Probado el 12/10/2026 con mapache, perro y búho, de la imagen a Studio. Kaggle 
   (no cabe en Kaggle).
 - La primera vez de cada persona: cuenta de Kaggle con el teléfono verificado (si no, no hay GPU) y su token
   guardado con `scripts/claves/GuardarClaveKaggle.ps1`. `trellis.ps1 -Usuario <usuario>` la primera vez.
-- `trellis.ps1` es nuevo (junta los pasos que en la prueba se hicieron a mano): **por probar** con la siguiente
-  mascota, cronometrando de principio a fin.
+- `trellis.ps1` junta todos los pasos. Probado de principio a fin en el ensayo: 2 mascotas en ~7 min.
 
 ## 3. Color con reglas, en directo (MCP de Blender)
 1. Pasa el script final con `"guardar_alta": true` para que deje la malla alta ya orientada (`alta.glb`).
@@ -46,5 +45,5 @@ apoyado, aristas abiertas, solo colores de la paleta). ~30 s más ~30 s de arran
 Ignora `vista_con_normal.png`: el mapa de normales no se usa.
 
 ## Qué falta por probar
-- Cronometrar una mascota nueva de principio a fin con todo ya montado (y con `trellis.ps1`).
+- Cronometrar una mascota nueva de principio a fin con todo ya montado, incluido el color en Blender.
 - El estilo definitivo de los juegos (lo pone la hoja de cada juego).

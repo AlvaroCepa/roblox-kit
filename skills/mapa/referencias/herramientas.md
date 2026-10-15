@@ -13,8 +13,8 @@ guarda la anterior en `.kit/copias/`). Se abre en Studio y se conecta `rojo serv
 - Sin nombres, también escribe `map/Ambience.project.json` (Lighting, Atmosphere, Sky, Bloom, ColorCorrection,
   SunRays, DepthOfField, Blur; solo lo que no es lo de Roblox).
 - No borra archivos de trozos que ya no están en Studio: avisa.
-- Habla con el MCP de Studio por su cuenta (no por el chat). **Por probar en el primer juego que lo use:**
-  tamaños grandes, tiempo y fiabilidad. Si falla al conectar, prueba con Studio en primer plano y repite.
+- Habla con el MCP de Studio por su cuenta (no por el chat). Probado en el ensayo: un mapa pequeño con su ambiente
+  en menos de 1 s. Falta verlo con un mapa grande. Si falla al conectar, prueba con Studio en primer plano y repite.
 
 ## Scatter (repartir prefabs)
 En modo Edit con execute_luau:
