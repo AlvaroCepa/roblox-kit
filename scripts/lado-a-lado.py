@@ -11,7 +11,14 @@ MARGEN = 12
 
 
 def cargar(ruta):
+    # «ruta#ancho,alto»: recorta desde arriba a la izquierda esa fracción (el marco de un dispositivo).
+    recorte = None
+    if "#" in ruta:
+        ruta, fr = ruta.rsplit("#", 1)
+        recorte = [float(x) for x in fr.split(",")]
     im = Image.open(ruta).convert("RGB")
+    if recorte:
+        im = im.crop((0, 0, max(1, round(im.width * recorte[0])), max(1, round(im.height * recorte[1]))))
     ancho = round(im.width * ALTO / im.height)
     return im.resize((ancho, ALTO), Image.LANCZOS)
 

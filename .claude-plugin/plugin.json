@@ -1,7 +1,7 @@
 {
   "name": "roblox-kit",
   "displayName": "Roblox Kit",
-  "version": "0.3.0",
+  "version": "0.4.0",
   "description": "Sistema para hacer juegos de Roblox con Claude Code: plan del juego, plantilla y kit de código, frenos y comprobaciones automáticas, MCP de Studio y Blender, y skills de cada oficio (UI, mapa, 3D, VFX, sonido, animación, trabajo entre dos).",
   "author": {
     "name": "AlvaroCepa",

@@ -54,7 +54,12 @@ function juntar(salida, refs, capturas, titulo) {
     process.exit(1);
   }
   for (const r of refs) if (!fs.existsSync(r)) throw new Error("no existe la referencia " + r);
-  const s = await abrir();
+  // El Studio con la copia de este juego (el nombre del proyecto de Rojo); si no, el que haya.
+  let nombreJuego;
+  try {
+    nombreJuego = JSON.parse(fs.readFileSync(path.join(process.cwd(), "default.project.json"), "utf8")).name;
+  } catch {}
+  const s = await abrir(nombreJuego).catch(() => abrir());
   const capturas = [];
   try {
     if (tipo === "ui") {
@@ -62,7 +67,10 @@ function juntar(salida, refs, capturas, titulo) {
       for (const d of lista) {
         const r = await s.luau(`return require(${KIT}.UICheck).show(${JSON.stringify(nombre)}, ${JSON.stringify(d)})`);
         if (!r.startsWith("mounted")) throw new Error(r);
-        capturas.push(await capturar(s, `${nombre}-${d}`));
+        // Solo el marco del dispositivo: lado-a-lado.py recorta «ruta#ancho,alto» (fracciones de la vista).
+        const recorte = (r.match(/crop=([\d.]+,[\d.]+)/) || [])[1];
+        const ruta = await capturar(s, `${nombre}-${d}`);
+        capturas.push(recorte ? `${ruta}#${recorte}` : ruta);
       }
       await s.luau(`require(${KIT}.UICheck).clear()`);
     } else if (tipo === "mapa" || tipo === "mapa-arriba") {
@@ -74,7 +82,8 @@ function juntar(salida, refs, capturas, titulo) {
     } else {
       // Efecto delante de la cámara, congelado al principio, a la mitad y al final.
       const nivel = JSON.stringify(extra || "normal");
-      for (const momento of [0.05, 0.5, 0.95]) {
+      // El final a 0.8 de la vida más larga: a 0.95 ya no queda casi ninguna partícula y la foto sale vacía.
+      for (const momento of [0.05, 0.5, 0.8]) {
         const r = await s.luau(`
 local Effects = require(${KIT}.Effects)
 local cam = workspace.CurrentCamera
@@ -98,7 +107,7 @@ return "ok"`);
   fs.mkdirSync(carpeta, { recursive: true });
   const salida = path.join(carpeta, `${tipo}-${nombre || "arriba"}-${new Date().toISOString().replace(/[:.]/g, "-")}.png`);
   juntar(salida, refs, capturas, `${tipo} ${nombre || ""}`.trim());
-  for (const c of capturas) fs.rmSync(c, { force: true });
+  for (const c of capturas) fs.rmSync(c.split("#")[0], { force: true });
   console.log("captura: " + salida);
 })().catch((e) => {
   console.log("captura: " + e.message);

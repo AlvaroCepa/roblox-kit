@@ -1,5 +1,5 @@
 --!strict
--- roblox-kit Effects v1
+-- roblox-kit Effects v2
 -- Copia del original del plugin (kit/juego/). No se edita en el juego: se actualiza desde el plugin.
 --
 -- Efectos visuales con UNA línea, siempre en el cliente (el servidor solo avisa por Zap):
@@ -67,7 +67,11 @@ function Effects.play(name: string, target: any, tier: Theme.Tier?): { ParticleE
 		local emitter = Instance.new("ParticleEmitter")
 		emitter.Enabled = false
 		emitter.Rate = 0
-		emitter.Texture = Asset.id(piece.texture)
+		-- Sin subir todavía: se queda la chispa de Roblox, para que el efecto se vea mientras tanto.
+		local texture = Asset.get(piece.texture)
+		if texture then
+			emitter.Texture = texture
+		end
 		if piece.color then
 			emitter.Color = ColorSequence.new(Theme.color(piece.color))
 		end

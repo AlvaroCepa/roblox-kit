@@ -1,5 +1,5 @@
 --!strict
--- roblox-kit UICheck v1
+-- roblox-kit UICheck v2
 -- Copia del original del plugin (kit/juego/). No se edita en el juego: se actualiza desde el plugin.
 --
 -- Mitad «en Studio» del comprobador de UI. Se lanza en modo EDICIÓN (sin Play) con execute_luau:
@@ -7,6 +7,8 @@
 -- Monta cada pantalla de StarterPlayerScripts.Client.UI (módulos con create) en marcos de 4 tamaños, con sus
 -- datos del peor caso (`sample`), y comprueba lo de la skill de UI. Una línea si todo va bien.
 --   .show("Hud", "phone")  deja montada una pantalla en un tamaño para hacer la captura; .clear() la quita.
+--   Dice qué parte de la vista ocupa el marco (crop=ancho,alto en fracciones, desde arriba a la izquierda) para
+--   que captura.js recorte solo el marco.
 -- Si todo va bien, la línea empieza por "roblox-kit comprobar-ui: bien": el hook del plugin lo ve y apunta la
 -- pasada buena (así el hook de Stop no vuelve a pedirla hasta que cambie la UI).
 
@@ -328,8 +330,21 @@ function UICheck.show(screen: string, deviceName: string?): string
 			for _, device in UICheck.devices do
 				if device.name == (deviceName or "pc") then
 					local _, err = mount(gui, module, device, true)
+					local view = workspace.CurrentCamera.ViewportSize
+					local scale = math.min(1, view.X / device.size.X, view.Y / device.size.Y)
+					local cropX = device.size.X * scale / view.X
+					local cropY = device.size.Y * scale / view.Y
 					return err
-						or `mounted {screen} at {device.name} ({device.size.X}x{device.size.Y}) in StarterGui.{FOLDER}`
+						or string.format(
+							"mounted %s at %s (%dx%d) in StarterGui.%s crop=%.4f,%.4f",
+							screen,
+							device.name,
+							device.size.X,
+							device.size.Y,
+							FOLDER,
+							cropX,
+							cropY
+						)
 				end
 			end
 		end

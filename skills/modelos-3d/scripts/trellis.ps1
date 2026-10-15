@@ -35,7 +35,8 @@ $archivoUsuario = Join-Path $env:LOCALAPPDATA 'Kaggle\usuario.txt'
 if (-not $Usuario -and (Test-Path -LiteralPath $archivoUsuario)) { $Usuario = (Get-Content -LiteralPath $archivoUsuario -TotalCount 1).Trim() }
 if (-not $Usuario) {
     $r = K kernels list --mine --csv
-    $fila = ($r.Texto -split "`n" | Select-Object -Skip 1 | Select-Object -First 1)
+    # La CLI deja líneas en blanco entre filas: la primera con «usuario/notebook».
+    $fila = ($r.Texto -split "`r?`n" | Where-Object { $_ -match '^[^/,]+/' } | Select-Object -First 1)
     if ($fila -match '^([^/,]+)/') { $Usuario = $matches[1] }
 }
 if (-not $Usuario) { Write-Output 'trellis: no sé tu usuario de Kaggle. Pásalo con -Usuario (se guarda para la próxima).'; exit 1 }

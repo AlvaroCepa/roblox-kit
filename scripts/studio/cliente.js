@@ -37,10 +37,12 @@ function conectar() {
     const id = siguiente++;
     const respuesta = new Promise((ok) => esperando.set(id, ok));
     hijo.stdin.write(JSON.stringify({ jsonrpc: "2.0", id, method, params }) + "\n");
-    const tiempo = new Promise((_, mal) =>
-      setTimeout(() => mal(new Error(`sin respuesta del MCP de Studio en ${segundos} s (${method})`)), segundos * 1000)
-    );
-    return Promise.race([respuesta, salida, tiempo]);
+    let reloj;
+    const tiempo = new Promise((_, mal) => {
+      reloj = setTimeout(() => mal(new Error(`sin respuesta del MCP de Studio en ${segundos} s (${method})`)), segundos * 1000);
+    });
+    // Sin apagar el reloj, el proceso sigue vivo hasta que vence (2 min tras acabar).
+    return Promise.race([respuesta, salida, tiempo]).finally(() => clearTimeout(reloj));
   }
   return { hijo, pedir };
 }
@@ -65,7 +67,11 @@ async function abrir(nombre) {
   }
   const lista = await llamarCrudo("list_roblox_studios", {}, 30);
   const studios = JSON.parse(lista.content[0].text).studios || [];
-  const studio = studios.find((s) => !nombre || String(s.name).includes(nombre)) || null;
+  // Primero la copia que monta `montar` (<nombre>.rbxl): una de recuperación de Studio también lleva el nombre.
+  const studio =
+    (nombre && studios.find((s) => String(s.name) === nombre + ".rbxl")) ||
+    studios.find((s) => !nombre || String(s.name).includes(nombre)) ||
+    null;
   if (!studio) {
     hijo.stdin.end();
     throw new Error(studios.length ? `no hay un Studio con «${nombre}» en el nombre` : "no hay ningún Studio conectado al MCP (¿Studio abierto con el MCP activado?)");

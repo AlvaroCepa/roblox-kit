@@ -1,5 +1,5 @@
 --!strict
--- roblox-kit MapCheck v1
+-- roblox-kit MapCheck v2
 -- Copia del original del plugin (kit/juego/). No se edita en el juego: se actualiza desde el plugin.
 --
 -- Mitad «en Studio» del comprobador del mapa (la otra mitad va en comprobar, sobre los .rbxm). Se lanza en
@@ -41,6 +41,31 @@ local function solidParts(root: Instance): { BasePart }
 		end
 	end
 	return list
+end
+
+-- Caja de todo el mapa. Workspace.Map es una carpeta (Rojo la crea desde map/fixed), y las carpetas no tienen
+-- GetBoundingBox: se calcula con las partes.
+local function bounds(root: Instance): (CFrame, Vector3)
+	local low = Vector3.one * math.huge
+	local high = -Vector3.one * math.huge
+	for _, d in root:GetDescendants() do
+		if d:IsA("BasePart") then
+			local half = d.Size / 2
+			for x = -1, 1, 2 do
+				for y = -1, 1, 2 do
+					for z = -1, 1, 2 do
+						local w = d.CFrame:PointToWorldSpace(half * Vector3.new(x, y, z))
+						low = low:Min(w)
+						high = high:Max(w)
+					end
+				end
+			end
+		end
+	end
+	if low.X == math.huge then
+		return CFrame.new(), Vector3.zero
+	end
+	return CFrame.new((low + high) / 2), high - low
 end
 
 local function markersFolder(): Folder
@@ -365,7 +390,7 @@ function MapCheck.run(): string
 
 	-- 2, 3, 4, 5, 9, 10. Sitios de pie y alcance (solo andando).
 	if checks.reach and movement.mode == "walk" and #parts > 0 then
-		local cf, size = (root :: any):GetBoundingBox()
+		local cf, size = bounds(root)
 		local box = { min = cf.Position - size / 2, max = cf.Position + size / 2 }
 		local area = size.X * size.Z
 		local grid = math.max(2, math.sqrt(area / MAX_COLUMNS))
@@ -498,7 +523,7 @@ function MapCheck.topView(): string
 	if not root then
 		return "no hay Workspace.Map"
 	end
-	local cf, size = (root :: any):GetBoundingBox()
+	local cf, size = bounds(root)
 	local height = math.max(size.X, size.Z) * 0.9 + size.Y
 	local camera = workspace.CurrentCamera
 	camera.CFrame = CFrame.lookAt(cf.Position + Vector3.new(0, height, 0.01), cf.Position)

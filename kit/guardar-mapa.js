@@ -115,6 +115,7 @@ local PROPS = {
 	SunRaysEffect = { "Enabled", "Intensity", "Spread" },
 	DepthOfFieldEffect = { "Enabled", "FarIntensity", "FocusDistance", "InFocusRadius", "NearIntensity" },
 	BlurEffect = { "Enabled", "Size" },
+	ColorGradingEffect = { "Enabled", "TonemapperPreset" },
 }
 local function valor(v)
 	local t = typeof(v)
@@ -122,6 +123,7 @@ local function valor(v)
 	if t == "number" then return math.floor(v * 10000 + 0.5) / 10000 end
 	if t == "boolean" or t == "string" then return v end
 	if t == "Content" then return v.Uri or "" end
+	if t == "EnumItem" then return v.Name end
 	return nil
 end
 local function cambios(objeto, base)
@@ -145,13 +147,17 @@ local referencia = {
 }
 local props = cambios(Lighting, referencia.Lighting)
 if next(props) then nodo["$properties"] = props end
+-- Todos los hijos (menos scripts): los que no están en PROPS se guardan igual, con sus valores de Roblox, para
+-- que no desaparezcan sin avisar.
 for _, hijo in Lighting:GetChildren() do
-	if PROPS[hijo.ClassName] then
-		local nuevo = Instance.new(hijo.ClassName)
-		local p = cambios(hijo, nuevo)
-		nuevo:Destroy()
+	if not hijo:IsA("LuaSourceContainer") then
 		local entrada = { ["$className"] = hijo.ClassName }
-		if next(p) then entrada["$properties"] = p end
+		local ok, nuevo = pcall(Instance.new, hijo.ClassName)
+		if ok then
+			local p = cambios(hijo, nuevo)
+			nuevo:Destroy()
+			if next(p) then entrada["$properties"] = p end
+		end
 		nodo[hijo.Name] = entrada
 	end
 end
